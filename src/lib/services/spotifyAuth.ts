@@ -1,53 +1,30 @@
+import { apiWrapper } from '$lib/utils/helpers/api';
+
 export const redirectToAuthUrl = async () => {
-	try {
-		const response = await fetch('/api/spotify-auth-url');
-
-		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-			throw new Error(`Network response was not ok: ${errorData.error || response.status}`);
-		}
-
-		const { authUrl, codeVerifier } = await response.json();
-
-		window.localStorage.setItem('code_verifier', codeVerifier);
-		window.location.href = authUrl;
-	} catch (error) {
-		console.error(
-			'Error while calling redirectToAuthUrl:',
-			error instanceof Error ? error.message : 'Unknown error'
-		);
-	}
+	const { authUrl, codeVerifier } = await apiWrapper('spotify-auth-url', {}, 'redirectToAuthUrl');
+	window.localStorage.setItem('code_verifier', codeVerifier);
+	window.location.href = authUrl;
 };
 
 export const getAndSetToken = async (code: string | null) => {
-	try {
-		if (!code) {
-			throw new Error('Access code has not been supplied');
-		}
+	if (!code) {
+		throw new Error('Access code has not been supplied');
+	}
 
-		const codeVerifier = localStorage.getItem('code_verifier') ?? '';
-
-		const response = await fetch('/api/spotify-get-token', {
+	const codeVerifier = localStorage.getItem('code_verifier') ?? '';
+	const responseJson = await apiWrapper(
+		'spotify-get-token',
+		{
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({ code, codeVerifier })
-		});
+		},
+		'getAndSetToken'
+	);
 
-		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-			throw new Error(`Network response was not ok: ${errorData.error || response.status}`);
-		}
-
-		const responseJson = await response.json();
-		localStorage.setItem('access_token', responseJson.access_token);
-	} catch (error) {
-		console.error(
-			'Error while calling getAndSetToken:',
-			error instanceof Error ? error.message : 'Unknown error'
-		);
-	}
+	localStorage.setItem('access_token', responseJson.access_token);
 };
 
 export const getProfile = async () => {
