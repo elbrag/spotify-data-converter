@@ -27,9 +27,10 @@ export const getAndSetToken = async (code: string | null) => {
 	localStorage.setItem('access_token', responseJson.access_token);
 };
 
-export const getProfile = async () => {
-	const accessToken = localStorage.getItem('access_token');
-
+export const getProfile = async (accessToken: string) => {
+	if (!accessToken) {
+		throw new Error('Access token has not been supplied');
+	}
 	const response = await fetch('https://api.spotify.com/v1/me', {
 		headers: {
 			Authorization: 'Bearer ' + accessToken
