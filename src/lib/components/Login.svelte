@@ -3,8 +3,7 @@
 	import Button from './Button.svelte';
 
 	const onLoginClick = async () => {
-		const code = await redirectToAuthUrl();
-		console.log(code);
+		await redirectToAuthUrl();
 	};
 </script>
 
