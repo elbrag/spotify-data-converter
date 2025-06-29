@@ -70,3 +70,20 @@ export const getProfile = async (accessToken: string) => {
 	const data = await response.json();
 	return data;
 };
+
+export const getUserPlaylists = async (userId: string, accessToken: string) => {
+	if (!userId) {
+		throw new Error('User id has not been supplied');
+	}
+	if (!accessToken) {
+		throw new Error('Access token has not been supplied');
+	}
+	const response = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists?limit=50`, {
+		headers: {
+			Authorization: 'Bearer ' + accessToken
+		}
+	});
+
+	const data = await response.json();
+	return data;
+};
