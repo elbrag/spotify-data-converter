@@ -1,19 +1,30 @@
 <script lang="ts">
 	import '../app.css';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { authStore } from '$lib/stores/auth';
+	import { refreshTokenIfNeeded } from '$lib/services/spotifyAuth';
+	import Navigation from '$lib/components/Navigation.svelte';
 
 	let { children } = $props();
+	let intervalId: number;
 
 	onMount(() => {
 		const accessToken = localStorage.getItem('access_token');
-		console.log('accessToken', accessToken);
-		console.log('$authStore.isLoggedIn in /layout', $authStore.isLoggedIn);
+
 		if (accessToken && !$authStore.isLoggedIn) {
-			console.log('Going to login');
 			authStore.login(accessToken);
 		}
+		intervalId = setInterval(async () => {
+			await refreshTokenIfNeeded();
+		}, 300000);
+
+		onDestroy(() => {
+			if (intervalId) {
+				clearInterval(intervalId);
+			}
+		});
 	});
 </script>
 
+<Navigation />
 {@render children()}

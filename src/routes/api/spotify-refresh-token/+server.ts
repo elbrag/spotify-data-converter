@@ -1,8 +1,8 @@
 import { SPOTIFY_CLIENT_ID } from '$env/static/private';
 
-export async function POST() {
+export async function POST({ request }) {
 	try {
-		const refreshToken = localStorage.getItem('refresh_token') || null;
+		const { refreshToken } = await request.json();
 
 		if (!refreshToken) {
 			throw new Error('No refresh token has been set');

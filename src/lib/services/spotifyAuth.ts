@@ -1,11 +1,17 @@
 import { goto } from '$app/navigation';
 import { authStore } from '$lib/stores/auth';
-import { apiWrapper } from '$lib/utils/helpers/api';
+import { apiWrapper, checkIfTokenNeedsRefresh } from '$lib/utils/helpers/api';
 
 export const redirectToAuthUrl = async () => {
 	const { authUrl, codeVerifier } = await apiWrapper('spotify-auth-url', {}, 'redirectToAuthUrl');
 	window.localStorage.setItem('code_verifier', codeVerifier);
 	window.location.href = authUrl;
+};
+
+const getStoredAccessToken = async (): Promise<string | null> => {
+	refreshTokenIfNeeded();
+	const accessToken = localStorage.getItem('access_token');
+	return accessToken;
 };
 
 export const getAndSetToken = async (code: string | null) => {
@@ -28,19 +34,29 @@ export const getAndSetToken = async (code: string | null) => {
 	saveToken(responseJson);
 };
 
-// TODO: Ensure this is called in a good place. Maybe a store
-export const refreshToken = async () => {
+export const refreshTokenIfNeeded = async () => {
+	const needsRefresh = checkIfTokenNeedsRefresh();
+
+	if (!needsRefresh) {
+		console.log("doesn't need refresh");
+		return;
+	}
+
+	const refreshToken = localStorage.getItem('refresh_token') || null;
+
 	const responseJson = await apiWrapper(
 		'spotify-refresh-token',
 		{
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
-			}
+			},
+			body: JSON.stringify({ refreshToken })
 		},
 		'refreshToken'
 	);
 	saveToken(responseJson);
+	console.log('Refreshed token');
 };
 
 const saveToken = async (responseJson: {
@@ -62,7 +78,9 @@ const saveToken = async (responseJson: {
 };
 
 export const getProfile = async () => {
-	const accessToken = localStorage.getItem('access_token');
+	console.log('localStorage in getProfiel', localStorage);
+	refreshTokenIfNeeded();
+	const accessToken = await getStoredAccessToken();
 	if (!accessToken) {
 		throw new Error('Access token has not been supplied');
 	}
@@ -80,7 +98,8 @@ export const getUserPlaylists = async (userId: string) => {
 	if (!userId) {
 		throw new Error('User id has not been supplied');
 	}
-	const accessToken = localStorage.getItem('access_token');
+	const accessToken = await getStoredAccessToken();
+
 	if (!accessToken) {
 		throw new Error('Access token has not been supplied');
 	}

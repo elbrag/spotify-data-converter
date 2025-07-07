@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Login from '$lib/components/Login.svelte';
-	import { getProfile, getUserPlaylists } from '$lib/services/spotifyAuth';
 	import { authStore } from '$lib/stores/auth';
 	import { onMount } from 'svelte';
 
