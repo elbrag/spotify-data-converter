@@ -7,7 +7,10 @@
 
 	onMount(() => {
 		const accessToken = localStorage.getItem('access_token');
-		if (accessToken) {
+		console.log('accessToken', accessToken);
+		console.log('$authStore.isLoggedIn in /layout', $authStore.isLoggedIn);
+		if (accessToken && !$authStore.isLoggedIn) {
+			console.log('Going to login');
 			authStore.login(accessToken);
 		}
 	});

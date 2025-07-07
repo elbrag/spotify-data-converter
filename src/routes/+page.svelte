@@ -1,5 +1,25 @@
-<script>
+<script lang="ts">
 	import Login from '$lib/components/Login.svelte';
+	import { getProfile, getUserPlaylists } from '$lib/services/spotifyAuth';
+	import { authStore } from '$lib/stores/auth';
+	import { onMount } from 'svelte';
+
+	let loading = false;
+	let showLogin = true;
+
+	onMount(() => {
+		loading = true;
+
+		const unsubscribe = authStore.subscribe(async (state) => {
+			if (state.isLoggedIn) {
+				showLogin = false;
+			}
+
+			loading = false;
+		});
+
+		return () => unsubscribe();
+	});
 </script>
 
 <div
@@ -7,6 +27,8 @@
 >
 	<div class="mb-20 flex flex-col items-center justify-center">
 		<h1 class="text-4xl font-bold text-white">Spotify data converter</h1>
-		<Login />
+		{#if showLogin}
+			<Login />
+		{/if}
 	</div>
 </div>

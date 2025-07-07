@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { getProfile, getUserPlaylists } from '$lib/services/spotifyAuth';
 	import { authStore } from '$lib/stores/auth';
 	import { onMount } from 'svelte';
@@ -8,21 +7,27 @@
 	let profile: any = null;
 	let lists: any[] = [];
 
-	onMount(async () => {
+	onMount(() => {
 		loading = true;
 
-		if ($authStore.isLoggedIn) {
-			profile = await getProfile();
-			console.log(profile);
-			if (profile) {
-				const userPlayListObject = await getUserPlaylists(profile.id);
-				console.log(userPlayListObject);
-				lists = userPlayListObject.items;
+		const unsubscribe = authStore.subscribe(async (state) => {
+			console.log('$authStore.isLoggedIn on /lists', state.isLoggedIn);
+
+			if (state.isLoggedIn) {
+				profile = await getProfile();
+				console.log(profile);
+
+				if (profile) {
+					const userPlayListObject = await getUserPlaylists(profile.id);
+					console.log(userPlayListObject);
+					lists = userPlayListObject.items;
+				}
 			}
-		} else {
-			await goto('/');
-		}
-		loading = false;
+
+			loading = false;
+		});
+
+		return () => unsubscribe();
 	});
 </script>
 
