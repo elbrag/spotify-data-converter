@@ -2,8 +2,8 @@
 	import { onMount } from 'svelte';
 	import { getAndSetToken } from '$lib/services/spotifyAuth';
 	import { goto } from '$app/navigation';
+	import { authStore } from '$lib/stores/auth';
 
-	let loggedIn = false;
 	let loading = false;
 
 	onMount(async () => {
@@ -12,22 +12,21 @@
 		const code = urlParams.get('code');
 		if (code) {
 			await getAndSetToken(code);
-			loggedIn = true;
 			setTimeout(async () => {
 				await goto('/lists');
 			}, 1000);
 		} else {
-			loggedIn = false;
+			// loggedIn = false;
 		}
 		loading = false;
 	});
 </script>
 
-{#if !loading && !loggedIn}
+{#if !loading && !$authStore.isLoggedIn}
 	<div>No login attempt was detected</div>
 {:else if loading}
 	<div>Logging in…</div>
-{:else if loggedIn}
+{:else if $authStore.isLoggedIn}
 	<div>Login successful!</div>
 {:else}
 	<div>No login code found.</div>

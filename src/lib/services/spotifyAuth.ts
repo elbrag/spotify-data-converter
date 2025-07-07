@@ -1,3 +1,5 @@
+import { goto } from '$app/navigation';
+import { authStore } from '$lib/stores/auth';
 import { apiWrapper } from '$lib/utils/helpers/api';
 
 export const redirectToAuthUrl = async () => {
@@ -52,12 +54,15 @@ const saveToken = async (responseJson: {
 	localStorage.setItem('refresh_token', refresh_token);
 	localStorage.setItem('expires_in', expires_in.toString());
 
+	authStore.login(access_token);
+
 	const now = new Date();
 	const expiry = new Date(now.getTime() + expires_in * 1000);
 	localStorage.setItem('expires', expiry.toString());
 };
 
-export const getProfile = async (accessToken: string) => {
+export const getProfile = async () => {
+	const accessToken = localStorage.getItem('access_token');
 	if (!accessToken) {
 		throw new Error('Access token has not been supplied');
 	}
@@ -71,10 +76,11 @@ export const getProfile = async (accessToken: string) => {
 	return data;
 };
 
-export const getUserPlaylists = async (userId: string, accessToken: string) => {
+export const getUserPlaylists = async (userId: string) => {
 	if (!userId) {
 		throw new Error('User id has not been supplied');
 	}
+	const accessToken = localStorage.getItem('access_token');
 	if (!accessToken) {
 		throw new Error('Access token has not been supplied');
 	}
@@ -86,4 +92,9 @@ export const getUserPlaylists = async (userId: string, accessToken: string) => {
 
 	const data = await response.json();
 	return data;
+};
+
+export const logoutClick = async () => {
+	localStorage.clear();
+	await goto('/');
 };

@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { getProfile, getUserPlaylists } from '$lib/services/spotifyAuth';
+	import { authStore } from '$lib/stores/auth';
 	import { onMount } from 'svelte';
 
 	let loading = false;
@@ -8,15 +10,17 @@
 
 	onMount(async () => {
 		loading = true;
-		const accessToken = localStorage.getItem('access_token');
-		if (accessToken) {
-			profile = await getProfile(accessToken);
+
+		if ($authStore.isLoggedIn) {
+			profile = await getProfile();
 			console.log(profile);
 			if (profile) {
-				const userPlayListObject = await getUserPlaylists(profile.id, accessToken);
+				const userPlayListObject = await getUserPlaylists(profile.id);
 				console.log(userPlayListObject);
 				lists = userPlayListObject.items;
 			}
+		} else {
+			await goto('/');
 		}
 		loading = false;
 	});
