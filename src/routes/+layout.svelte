@@ -2,7 +2,7 @@
 	import '../app.css';
 	import { onDestroy, onMount } from 'svelte';
 	import { authStore } from '$lib/stores/auth';
-	import { refreshTokenIfNeeded } from '$lib/services/spotifyAuth';
+	import { checkTokenAndLoginExpiries } from '$lib/services/spotifyAuth';
 	import Navigation from '$lib/components/Navigation.svelte';
 
 	let { children } = $props();
@@ -15,7 +15,7 @@
 			authStore.login(accessToken);
 		}
 		intervalId = setInterval(async () => {
-			await refreshTokenIfNeeded();
+			await checkTokenAndLoginExpiries();
 		}, 300000);
 
 		onDestroy(() => {

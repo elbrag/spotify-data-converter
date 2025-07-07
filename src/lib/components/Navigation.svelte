@@ -2,6 +2,7 @@
 	import { authStore } from '$lib/stores/auth';
 	import { onMount } from 'svelte';
 	import Button from './Button.svelte';
+	import { logout } from '$lib/services/spotifyAuth';
 
 	onMount(() => {});
 </script>
@@ -11,7 +12,11 @@
 		<p>Spotify data converter</p>
 		<ul>
 			{#if $authStore.isLoggedIn}
-				<Button>Log out</Button>
+				<Button
+					onClick={() => {
+						logout();
+					}}>Log out</Button
+				>
 			{/if}
 			<li></li>
 		</ul>

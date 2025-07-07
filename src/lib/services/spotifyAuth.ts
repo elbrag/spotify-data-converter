@@ -1,10 +1,14 @@
 import { goto } from '$app/navigation';
 import { authStore } from '$lib/stores/auth';
-import { apiWrapper, checkIfTokenNeedsRefresh } from '$lib/utils/helpers/api';
+import {
+	apiWrapper,
+	checkIfLoginIsExpired,
+	checkIfTokenNeedsRefresh
+} from '$lib/utils/helpers/api';
 
 export const redirectToAuthUrl = async () => {
 	const { authUrl, codeVerifier } = await apiWrapper('spotify-auth-url', {}, 'redirectToAuthUrl');
-	window.localStorage.setItem('code_verifier', codeVerifier);
+	localStorage.setItem('code_verifier', codeVerifier);
 	window.location.href = authUrl;
 };
 
@@ -32,6 +36,15 @@ export const getAndSetToken = async (code: string | null) => {
 		'getAndSetToken'
 	);
 	saveToken(responseJson);
+};
+
+export const checkTokenAndLoginExpiries = async () => {
+	const loginExpired = checkIfLoginIsExpired();
+	if (loginExpired) {
+		logout();
+	} else {
+		await refreshTokenIfNeeded();
+	}
 };
 
 export const refreshTokenIfNeeded = async () => {
@@ -73,12 +86,14 @@ const saveToken = async (responseJson: {
 	authStore.login(access_token);
 
 	const now = new Date();
-	const expiry = new Date(now.getTime() + expires_in * 1000);
-	localStorage.setItem('expires', expiry.toString());
+	const tokenExpiry = new Date(now.getTime() + expires_in * 1000);
+	localStorage.setItem('token_expires', tokenExpiry.toString());
+
+	const loginExpiry = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+	localStorage.setItem('login_expires', loginExpiry.toString());
 };
 
 export const getProfile = async () => {
-	console.log('localStorage in getProfiel', localStorage);
 	refreshTokenIfNeeded();
 	const accessToken = await getStoredAccessToken();
 	if (!accessToken) {
@@ -113,7 +128,7 @@ export const getUserPlaylists = async (userId: string) => {
 	return data;
 };
 
-export const logoutClick = async () => {
+export const logout = async () => {
 	localStorage.clear();
 	await goto('/');
 };
