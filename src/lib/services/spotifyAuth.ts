@@ -1,4 +1,5 @@
 import { goto } from '$app/navigation';
+import { LocalStorageKeys } from '$lib/enums/storage';
 import { authStore } from '$lib/stores/auth';
 import {
 	spotifyApiWrapper,
@@ -15,7 +16,7 @@ export const redirectToAuthUrl = async (): Promise<void> => {
 		'spotify-auth-url',
 		'redirectToAuthUrl'
 	);
-	localStorage.setItem('code_verifier', codeVerifier);
+	localStorage.setItem(LocalStorageKeys.codeVerifier, codeVerifier);
 	window.location.href = authUrl;
 };
 
@@ -27,7 +28,7 @@ export const redirectToAuthUrl = async (): Promise<void> => {
  */
 const getStoredAccessToken = async (): Promise<string | null> => {
 	refreshTokenIfNeeded();
-	const accessToken = localStorage.getItem('access_token');
+	const accessToken = localStorage.getItem(LocalStorageKeys.accessToken);
 	return accessToken;
 };
 
@@ -39,7 +40,7 @@ export const getAndSetToken = async (code: string | null): Promise<void> => {
 		throw new Error('Access code has not been supplied');
 	}
 
-	const codeVerifier = localStorage.getItem('code_verifier') ?? '';
+	const codeVerifier = localStorage.getItem(LocalStorageKeys.codeVerifier) ?? '';
 	const responseJson = await spotifyApiWrapper('spotify-get-token', 'getAndSetToken', 'POST', {
 		body: JSON.stringify({ code, codeVerifier })
 	});
@@ -69,7 +70,7 @@ export const refreshTokenIfNeeded = async (): Promise<void> => {
 		return;
 	}
 
-	const refreshToken = localStorage.getItem('refresh_token') || null;
+	const refreshToken = localStorage.getItem(LocalStorageKeys.refreshToken) || null;
 
 	const responseJson = await spotifyApiWrapper('spotify-refresh-token', 'refreshToken', 'POST', {
 		body: JSON.stringify({ refreshToken })
@@ -88,18 +89,18 @@ const saveToken = async (responseJson: {
 }): Promise<void> => {
 	const { access_token, refresh_token, expires_in } = responseJson;
 
-	localStorage.setItem('access_token', access_token);
-	localStorage.setItem('refresh_token', refresh_token);
-	localStorage.setItem('expires_in', expires_in.toString());
+	localStorage.setItem(LocalStorageKeys.accessToken, access_token);
+	localStorage.setItem(LocalStorageKeys.refreshToken, refresh_token);
+	localStorage.setItem(LocalStorageKeys.expiresIn, expires_in.toString());
 
 	authStore.login(access_token);
 
 	const now = new Date();
 	const tokenExpiry = new Date(now.getTime() + expires_in * 1000);
-	localStorage.setItem('token_expires', tokenExpiry.toString());
+	localStorage.setItem(LocalStorageKeys.tokenExpires, tokenExpiry.toString());
 
 	const loginExpiry = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-	localStorage.setItem('login_expires', loginExpiry.toString());
+	localStorage.setItem(LocalStorageKeys.loginExpires, loginExpiry.toString());
 };
 
 /**

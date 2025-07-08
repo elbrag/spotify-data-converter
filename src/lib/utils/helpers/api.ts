@@ -1,3 +1,5 @@
+import { LocalStorageKeys } from '$lib/enums/storage';
+
 /**
  * Api wrapper for Spotify api calls
  */
@@ -38,8 +40,8 @@ export const checkIfTokenNeedsRefresh = (): boolean => {
 		return false;
 	}
 
-	const tokenExpires = localStorage.getItem('token_expires');
-	const accessToken = localStorage.getItem('access_token');
+	const tokenExpires = localStorage.getItem(LocalStorageKeys.tokenExpires);
+	const accessToken = localStorage.getItem(LocalStorageKeys.accessToken);
 
 	if (!tokenExpires || !accessToken) {
 		return false;
@@ -60,7 +62,7 @@ export const checkIfLoginIsExpired = (): boolean => {
 		return false;
 	}
 
-	const loginExpires = localStorage.getItem('login_expires');
+	const loginExpires = localStorage.getItem(LocalStorageKeys.loginExpires);
 
 	if (!loginExpires) {
 		return true;

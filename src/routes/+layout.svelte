@@ -4,12 +4,13 @@
 	import { authStore } from '$lib/stores/auth';
 	import { checkTokenAndLoginExpiries } from '$lib/services/spotifyAuth';
 	import Navigation from '$lib/components/Navigation.svelte';
+	import { LocalStorageKeys } from '$lib/enums/storage';
 
 	let { children } = $props();
 	let intervalId: number;
 
 	onMount(() => {
-		const accessToken = localStorage.getItem('access_token');
+		const accessToken = localStorage.getItem(LocalStorageKeys.accessToken);
 
 		if (accessToken && !$authStore.isLoggedIn) {
 			authStore.login(accessToken);
