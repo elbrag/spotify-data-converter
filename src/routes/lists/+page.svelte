@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { getProfile, getUserPlaylists } from '$lib/services/spotifyAuth';
 	import { authStore } from '$lib/stores/auth';
+	import type { Playlist, PrivateUser } from 'spotify-types';
 	import { onMount } from 'svelte';
 
-	let loading = false;
-	let profile: any = null;
-	let lists: any[] = [];
+	let loading: boolean = false;
+	let profile: PrivateUser | null = null;
+	let lists: Playlist[] = [];
 
 	onMount(() => {
 		loading = true;

@@ -1,6 +1,17 @@
-export const apiWrapper = async (url: string, options = {}, functionName: string) => {
+export const apiWrapper = async (
+	url: string,
+	functionName: string,
+	method: 'GET' | 'POST' = 'GET',
+	options = {}
+) => {
 	try {
-		const response = await fetch(`/api/${url}`, options);
+		const response = await fetch(`/api/${url}`, {
+			...options,
+			method,
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
 
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));

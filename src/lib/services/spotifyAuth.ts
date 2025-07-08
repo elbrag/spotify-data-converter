@@ -5,9 +5,10 @@ import {
 	checkIfLoginIsExpired,
 	checkIfTokenNeedsRefresh
 } from '$lib/utils/helpers/api';
+import type { Paging, Playlist, PrivateUser } from 'spotify-types';
 
-export const redirectToAuthUrl = async () => {
-	const { authUrl, codeVerifier } = await apiWrapper('spotify-auth-url', {}, 'redirectToAuthUrl');
+export const redirectToAuthUrl = async (): Promise<void> => {
+	const { authUrl, codeVerifier } = await apiWrapper('spotify-auth-url', 'redirectToAuthUrl');
 	localStorage.setItem('code_verifier', codeVerifier);
 	window.location.href = authUrl;
 };
@@ -18,27 +19,19 @@ const getStoredAccessToken = async (): Promise<string | null> => {
 	return accessToken;
 };
 
-export const getAndSetToken = async (code: string | null) => {
+export const getAndSetToken = async (code: string | null): Promise<void> => {
 	if (!code) {
 		throw new Error('Access code has not been supplied');
 	}
 
 	const codeVerifier = localStorage.getItem('code_verifier') ?? '';
-	const responseJson = await apiWrapper(
-		'spotify-get-token',
-		{
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ code, codeVerifier })
-		},
-		'getAndSetToken'
-	);
+	const responseJson = await apiWrapper('spotify-get-token', 'getAndSetToken', 'POST', {
+		body: JSON.stringify({ code, codeVerifier })
+	});
 	saveToken(responseJson);
 };
 
-export const checkTokenAndLoginExpiries = async () => {
+export const checkTokenAndLoginExpiries = async (): Promise<void> => {
 	const loginExpired = checkIfLoginIsExpired();
 	if (loginExpired) {
 		logout();
@@ -47,7 +40,7 @@ export const checkTokenAndLoginExpiries = async () => {
 	}
 };
 
-export const refreshTokenIfNeeded = async () => {
+export const refreshTokenIfNeeded = async (): Promise<void> => {
 	const needsRefresh = checkIfTokenNeedsRefresh();
 
 	if (!needsRefresh) {
@@ -57,17 +50,9 @@ export const refreshTokenIfNeeded = async () => {
 
 	const refreshToken = localStorage.getItem('refresh_token') || null;
 
-	const responseJson = await apiWrapper(
-		'spotify-refresh-token',
-		{
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ refreshToken })
-		},
-		'refreshToken'
-	);
+	const responseJson = await apiWrapper('spotify-refresh-token', 'refreshToken', 'POST', {
+		body: JSON.stringify({ refreshToken })
+	});
 	saveToken(responseJson);
 	console.log('Refreshed token');
 };
@@ -76,7 +61,7 @@ const saveToken = async (responseJson: {
 	access_token: string;
 	refresh_token: string;
 	expires_in: number;
-}) => {
+}): Promise<void> => {
 	const { access_token, refresh_token, expires_in } = responseJson;
 
 	localStorage.setItem('access_token', access_token);
@@ -93,7 +78,7 @@ const saveToken = async (responseJson: {
 	localStorage.setItem('login_expires', loginExpiry.toString());
 };
 
-export const getProfile = async () => {
+export const getProfile = async (): Promise<PrivateUser> => {
 	refreshTokenIfNeeded();
 	const accessToken = await getStoredAccessToken();
 	if (!accessToken) {
@@ -105,11 +90,11 @@ export const getProfile = async () => {
 		}
 	});
 
-	const data = await response.json();
+	const data: PrivateUser = await response.json();
 	return data;
 };
 
-export const getUserPlaylists = async (userId: string) => {
+export const getUserPlaylists = async (userId: string): Promise<Paging<Playlist>> => {
 	if (!userId) {
 		throw new Error('User id has not been supplied');
 	}
@@ -124,11 +109,12 @@ export const getUserPlaylists = async (userId: string) => {
 		}
 	});
 
-	const data = await response.json();
+	const data: Paging<Playlist> = await response.json();
+	console.log('getUserPlaylists data', data);
 	return data;
 };
 
-export const logout = async () => {
+export const logout = async (): Promise<void> => {
 	localStorage.clear();
 	await goto('/');
 };
