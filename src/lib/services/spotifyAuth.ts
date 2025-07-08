@@ -1,36 +1,54 @@
 import { goto } from '$app/navigation';
 import { authStore } from '$lib/stores/auth';
 import {
-	apiWrapper,
+	spotifyApiWrapper,
 	checkIfLoginIsExpired,
 	checkIfTokenNeedsRefresh
 } from '$lib/utils/helpers/api';
 import type { Paging, Playlist, PrivateUser } from 'spotify-types';
 
+/**
+ * Redirect to Spotify auth url
+ */
 export const redirectToAuthUrl = async (): Promise<void> => {
-	const { authUrl, codeVerifier } = await apiWrapper('spotify-auth-url', 'redirectToAuthUrl');
+	const { authUrl, codeVerifier } = await spotifyApiWrapper(
+		'spotify-auth-url',
+		'redirectToAuthUrl'
+	);
 	localStorage.setItem('code_verifier', codeVerifier);
 	window.location.href = authUrl;
 };
 
+/**
+ * Get locally stored access token
+ *
+ * refresh if necessary
+ *
+ */
 const getStoredAccessToken = async (): Promise<string | null> => {
 	refreshTokenIfNeeded();
 	const accessToken = localStorage.getItem('access_token');
 	return accessToken;
 };
 
+/**
+ * Get and save token from Spotify using codeVerifier
+ */
 export const getAndSetToken = async (code: string | null): Promise<void> => {
 	if (!code) {
 		throw new Error('Access code has not been supplied');
 	}
 
 	const codeVerifier = localStorage.getItem('code_verifier') ?? '';
-	const responseJson = await apiWrapper('spotify-get-token', 'getAndSetToken', 'POST', {
+	const responseJson = await spotifyApiWrapper('spotify-get-token', 'getAndSetToken', 'POST', {
 		body: JSON.stringify({ code, codeVerifier })
 	});
 	saveToken(responseJson);
 };
 
+/**
+ * Check if login is expired. If not, call refreshTokenIfNeeded
+ */
 export const checkTokenAndLoginExpiries = async (): Promise<void> => {
 	const loginExpired = checkIfLoginIsExpired();
 	if (loginExpired) {
@@ -40,6 +58,9 @@ export const checkTokenAndLoginExpiries = async (): Promise<void> => {
 	}
 };
 
+/**
+ * Check if token is expired, if so, refresh it
+ */
 export const refreshTokenIfNeeded = async (): Promise<void> => {
 	const needsRefresh = checkIfTokenNeedsRefresh();
 
@@ -50,13 +71,16 @@ export const refreshTokenIfNeeded = async (): Promise<void> => {
 
 	const refreshToken = localStorage.getItem('refresh_token') || null;
 
-	const responseJson = await apiWrapper('spotify-refresh-token', 'refreshToken', 'POST', {
+	const responseJson = await spotifyApiWrapper('spotify-refresh-token', 'refreshToken', 'POST', {
 		body: JSON.stringify({ refreshToken })
 	});
 	saveToken(responseJson);
 	console.log('Refreshed token');
 };
 
+/**
+ * Save tokens and their expire dates to local storage
+ */
 const saveToken = async (responseJson: {
 	access_token: string;
 	refresh_token: string;
@@ -78,6 +102,9 @@ const saveToken = async (responseJson: {
 	localStorage.setItem('login_expires', loginExpiry.toString());
 };
 
+/**
+ * Get Spotify user profile
+ */
 export const getProfile = async (): Promise<PrivateUser> => {
 	refreshTokenIfNeeded();
 	const accessToken = await getStoredAccessToken();
@@ -94,6 +121,9 @@ export const getProfile = async (): Promise<PrivateUser> => {
 	return data;
 };
 
+/**
+ * Get Spotify user playlists
+ */
 export const getUserPlaylists = async (userId: string): Promise<Paging<Playlist>> => {
 	if (!userId) {
 		throw new Error('User id has not been supplied');
@@ -114,6 +144,9 @@ export const getUserPlaylists = async (userId: string): Promise<Paging<Playlist>
 	return data;
 };
 
+/**
+ * Logout from Spotify
+ */
 export const logout = async (): Promise<void> => {
 	localStorage.clear();
 	await goto('/');

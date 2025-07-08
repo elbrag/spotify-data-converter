@@ -1,4 +1,7 @@
-export const apiWrapper = async (
+/**
+ * Api wrapper for Spotify api calls
+ */
+export const spotifyApiWrapper = async (
 	url: string,
 	functionName: string,
 	method: 'GET' | 'POST' = 'GET',
@@ -27,6 +30,9 @@ export const apiWrapper = async (
 	}
 };
 
+/**
+ * Check if token has expired
+ */
 export const checkIfTokenNeedsRefresh = (): boolean => {
 	if (typeof window === 'undefined') {
 		return false;
@@ -46,6 +52,9 @@ export const checkIfTokenNeedsRefresh = (): boolean => {
 	return now.getTime() >= expiresDate.getTime() - bufferTime;
 };
 
+/**
+ * Check if login has expired
+ */
 export const checkIfLoginIsExpired = (): boolean => {
 	if (typeof window === 'undefined') {
 		return false;
