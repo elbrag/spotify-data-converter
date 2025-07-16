@@ -2,13 +2,13 @@
 	import PlaylistListItem from '$lib/components/PlaylistListItem.svelte';
 	import { getProfile, getUserPlaylists } from '$lib/services/spotifyAuth';
 	import { authStore } from '$lib/stores/auth';
+	import { uiStore } from '$lib/stores/ui';
 	import type { Playlist, PrivateUser } from 'spotify-types';
 	import { onMount } from 'svelte';
 
 	let loading: boolean = false;
 	let profile: PrivateUser | null = null;
 	let lists: Playlist[] = [];
-	let checkedListIds: string[] = [];
 
 	onMount(() => {
 		loading = true;
@@ -29,15 +29,12 @@
 	});
 
 	const onListCheck = (list: Playlist) => {
-		const isChecked = checkedListIds.includes(list.id);
+		const isChecked = $uiStore.checkedPlaylistIds.includes(list.id);
+		const lists = isChecked
+			? $uiStore.checkedPlaylistIds.filter((id) => id !== list.id)
+			: [...$uiStore.checkedPlaylistIds, list.id];
 
-		if (isChecked) {
-			checkedListIds = checkedListIds.filter((id) => id !== list.id);
-		} else {
-			checkedListIds = [...checkedListIds, list.id];
-		}
-
-		console.log('Checked list IDs:', checkedListIds);
+		uiStore.updateCheckedPlaylistIds(lists);
 	};
 </script>
 
@@ -47,12 +44,12 @@
 	{:else if profile != null}
 		<div>Profile for {profile.id} was fetched</div>
 		{#if lists?.length}
-			<ul class="mt-10">
+			<ul class="mt-10 flex flex-col gap-1">
 				{#each lists as list}
 					<PlaylistListItem
 						name={list.name}
 						onClick={() => onListCheck(list)}
-						checked={checkedListIds.includes(list.id)}
+						checked={$uiStore.checkedPlaylistIds.includes(list.id)}
 						id={list.id}
 					/>
 				{/each}

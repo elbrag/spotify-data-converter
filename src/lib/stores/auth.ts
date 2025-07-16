@@ -1,4 +1,4 @@
-import type { AuthState } from '$lib/types/auth';
+import type { AuthState } from '$lib/types/storeState';
 import { writable } from 'svelte/store';
 
 const createAuthStore = () => {

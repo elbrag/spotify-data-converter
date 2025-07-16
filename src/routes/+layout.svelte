@@ -5,6 +5,7 @@
 	import { checkTokenAndLoginExpiries } from '$lib/services/spotifyAuth';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import { LocalStorageKeys } from '$lib/enums/storage';
+	import BottomBar from '$lib/components/BottomBar.svelte';
 
 	let { children } = $props();
 	let intervalId: number;
@@ -29,5 +30,8 @@
 
 <div class="bg-indigo-950 text-white">
 	<Navigation />
-	{@render children()}
+	<main class="px-2 pb-24 lg:px-4 lg:pb-48">
+		{@render children()}
+	</main>
+	<BottomBar />
 </div>

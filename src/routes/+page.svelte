@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Login from '$lib/components/Login.svelte';
 	import { authStore } from '$lib/stores/auth';
-	import { onMount } from 'svelte';
 </script>
 
 <div class="flex h-full min-h-screen flex-col justify-center">
