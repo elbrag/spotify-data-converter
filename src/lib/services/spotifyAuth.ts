@@ -99,7 +99,9 @@ const saveToken = async (responseJson: {
 	const tokenExpiry = new Date(now.getTime() + expires_in * 1000);
 	localStorage.setItem(LocalStorageKeys.tokenExpires, tokenExpiry.toString());
 
-	const loginExpiry = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+	// const loginExpiry = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+	// Let's do 1.5h while developing. Comment back above to get 24h
+	const loginExpiry = new Date(now.getTime() + 1.5 * 60 * 60 * 1000);
 	localStorage.setItem(LocalStorageKeys.loginExpires, loginExpiry.toString());
 };
 
