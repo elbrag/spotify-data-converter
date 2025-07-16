@@ -27,5 +27,7 @@
 	});
 </script>
 
-<Navigation />
-{@render children()}
+<div class="bg-indigo-950 text-white">
+	<Navigation />
+	{@render children()}
+</div>

@@ -7,7 +7,7 @@
 	onMount(() => {});
 </script>
 
-<header class="bg-sky-200">
+<header>
 	<nav class="flex items-center justify-between px-5 py-3">
 		<p>Spotify data converter</p>
 		<ul>
