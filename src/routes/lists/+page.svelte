@@ -13,13 +13,10 @@
 	onMount(() => {
 		loading = true;
 		const unsubscribe = authStore.subscribe(async (state) => {
-			console.log('$authStore.isLoggedIn on /lists', state.isLoggedIn);
 			if (state.isLoggedIn) {
 				profile = await getProfile();
-				console.log(profile);
 				if (profile) {
 					const userPlayListObject = await getUserPlaylists(profile.id);
-					console.log(userPlayListObject);
 					lists = userPlayListObject.items;
 				}
 			}

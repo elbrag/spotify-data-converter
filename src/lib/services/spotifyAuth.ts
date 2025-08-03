@@ -148,6 +148,29 @@ export const getUserPlaylists = async (userId: string): Promise<Paging<Playlist>
 };
 
 /**
+ * Get playlist by id
+ */
+export const getPlaylist = async (playlistId: string): Promise<Playlist> => {
+	if (!playlistId) {
+		throw new Error('Playlist id has not been supplied');
+	}
+	const accessToken = await getStoredAccessToken();
+
+	if (!accessToken) {
+		throw new Error('Access token has not been supplied');
+	}
+	const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
+		headers: {
+			Authorization: 'Bearer ' + accessToken
+		}
+	});
+
+	const data: Playlist = await response.json();
+	console.log('playlist:', data);
+	return data;
+};
+
+/**
  * Logout from Spotify
  */
 export const logout = async (): Promise<void> => {
