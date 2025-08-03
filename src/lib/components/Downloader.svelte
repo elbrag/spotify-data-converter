@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import Button from './Button.svelte';
 	import { getPlaylist } from '$lib/services/spotifyAuth';
-	import { convertTracksToCsv } from '$lib/utils/helpers/fileConversion';
+	import { convertTracksToCsv, downloadPlaylistAsCsv } from '$lib/utils/helpers/fileConversion';
 	import type { Paging, PlaylistTrack } from 'spotify-types';
 
 	onMount(() => {});
@@ -13,8 +13,9 @@
 		$uiStore.checkedPlaylistIds.forEach(async (id) => {
 			const playlist = await getPlaylist(id);
 			// Types don't seem to match up with data gotten from the api. Maybe investigate a bit more, otherwise we'll have to typecast :/
-			const tracks = playlist.tracks as unknown as Paging<PlaylistTrack[]>;
+			const tracks = playlist.tracks as unknown as Paging<PlaylistTrack>;
 			const tracksInCsv = convertTracksToCsv(tracks);
+			downloadPlaylistAsCsv(tracksInCsv, playlist.name);
 		});
 	};
 </script>
