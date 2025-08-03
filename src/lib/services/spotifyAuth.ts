@@ -143,7 +143,6 @@ export const getUserPlaylists = async (userId: string): Promise<Paging<Playlist>
 	});
 
 	const data: Paging<Playlist> = await response.json();
-	console.log('getUserPlaylists data', data);
 	return data;
 };
 
@@ -166,7 +165,6 @@ export const getPlaylist = async (playlistId: string): Promise<Playlist> => {
 	});
 
 	const data: Playlist = await response.json();
-	console.log('playlist:', data);
 	return data;
 };
 
